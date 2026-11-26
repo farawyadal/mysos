@@ -37,7 +37,7 @@ label{font-size:13px;font-weight:700;display:flex;flex-direction:column;gap:4px}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:10px}
 h2{font-size:15px;margin:8px 0 0}
 .warn{color:#B3261E;font-weight:700;font-size:13px}
-.chk{flex-direction:row;align-items:center;gap:8px;min-height:36px;font-weight:400;font-size:14px}.chk input{width:20px;min-height:20px}
+.chk{flex-direction:row;align-items:center;gap:8px;min-height:36px;font-weight:400;font-size:14px}.chk input{width:20px;min-height:20px;flex-shrink:0}
 footer{margin-top:auto;text-align:center;font-size:11px;line-height:1.7;color:#4B5563;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
 #load{position:fixed;inset:0;background:rgba(243,244,246,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:9}
 #load[hidden]{display:none}
@@ -50,7 +50,7 @@ footer{margin-top:auto;text-align:center;font-size:11px;line-height:1.7;color:#4
 <div id="wrap">
 <header><img src="logo.svg" alt="Logo MySOS"><div><h1 id="title">MySOS</h1><p id="sub"></p></div><button id="back" hidden>Kembali</button></header>
 <main id="main"></main>
-<footer>MySOS . v1.2 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
+<footer>MySOS . v1.3 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
 </div>
 <script>//---------------------------------------------------------------------
 //
@@ -2381,7 +2381,7 @@ function back(){if(stack.length>1)history.back()}
 onpopstate=()=>{if(stack.length>1)stack.pop();render()};
 $('back').onclick=back;
 function head(t,s){$('title').textContent=t;$('sub').textContent=s}
-function render(){const [v,a,b]=stack[stack.length-1];$('back').hidden=stack.length<2;$('main').replaceChildren();({home,list,edit,card,imp})[v](a,b);scrollTo(0,0)}
+function render(){const [v,a,b]=stack[stack.length-1];$('back').hidden=stack.length<2;$('main').replaceChildren();({home,list,edit,card,imp,pick})[v](a,b);scrollTo(0,0)}
 const add=(...n)=>$('main').append(...n.filter(Boolean));
 
 function item(i,type,key){
@@ -2425,6 +2425,29 @@ function imp(){
     save();alert(pick.length+' rekod diimport.');back()},'p'),
     el('small',{style:'color:#4B5563'},'No. polisi dan hotline insurans isi sendiri (tekan Edit). Tak hilang bila kemas kini.'));
 }
+const canPick=()=>'contacts' in navigator&&'ContactsManager' in window;
+async function phonebook(cat){
+  let got;try{got=await navigator.contacts.select(['name','tel'],{multiple:true})}catch(e){return alert('Phonebook tak dapat dibuka. Cuba lagi atau taip manual.')}
+  const rows=got.map(c=>({name:str((c.name||[])[0]).trim(),tels:[...new Set((c.tel||[]).map(t=>str(t).trim()).filter(Boolean))]})).filter(r=>r.name||r.tels.length);
+  if(rows.length)go('pick',rows,cat)}
+function pick(rows,cat){
+  head('Dari phonebook','Pilih kategori, lepas tu simpan');
+  const key=t=>waNum(t)||digits(t),have=t=>!!t&&db.items.some(i=>i.tel&&key(i.tel)===key(t));
+  const list=rows.map(r=>{
+    const name=r.name||r.tels[0];
+    const tel=el('select',{'aria-label':'Nombor untuk '+name},...(r.tels.length?r.tels:['']).map(t=>el('option',{value:t},t||'Tiada nombor')));
+    const c=el('select',{'aria-label':'Kategori untuk '+name},...Object.entries(CATS).map(([k,[t]])=>el('option',{value:k},t)));c.value=cat||'keluarga';
+    const on=el('input',{type:'checkbox'}),note=el('small',{class:'warn'});on.checked=!have(tel.value);
+    const mark=()=>{note.textContent=have(tel.value)?'Nombor ni dah ada dalam MySOS':''};
+    tel.onchange=()=>{mark();on.checked=!have(tel.value);count()};on.onchange=()=>count();mark();
+    add(el('div',{class:'card',style:'display:flex;flex-direction:column;gap:8px'},el('label',{class:'chk'},on,el('strong',{},name)),r.tels.length>1?tel:el('small',{},tel.value||'Tiada nombor'),note,el('label',{},'Kategori',c)));
+    return{name,tel,c,on}});
+  const b=btn('',()=>{
+    const sel=list.filter(r=>r.on.checked);if(!sel.length)return alert('Tanda sekurang-kurangnya satu.');
+    db.items.push(...clean({items:sel.map(r=>({id:uid(),name:r.name,tel:r.tel.value,cat:r.c.value,sit:[]}))}).items);save();back()},'p');
+  function count(){b.textContent='Simpan '+list.filter(r=>r.on.checked).length+' contact'}
+  count();add(b,el('small',{style:'color:#4B5563'},'MySOS cuma terima contact yang kau pilih.'));
+}
 function home(){
   head('MySOS','Contact penting, sekali tekan');
   const res=el('div',{style:'display:flex;flex-direction:column;gap:10px'});
@@ -2435,7 +2458,7 @@ function home(){
   add(el('h2',{},'Situasi'),...Object.entries(SITS).map(([k,t])=>btn(t,()=>go('list','sit',k))));
   add(el('h2',{},'Kategori'),el('div',{class:'grid'},...Object.entries(CATS).map(([k,[t,s]])=>btn([t],()=>go('list','cat',k),'tile'))));
   document.querySelectorAll('.tile').forEach((n,x)=>{const [k,[,s]]=Object.entries(CATS)[x];const c=db.items.filter(i=>i.cat===k).length;n.append(el('small',{},c?c+' contact':s))});
-  add(btn('+ Tambah contact',()=>go('edit'),'p'),btn('Kad Kecemasan Aku',()=>go('card')),source().length&&btn('Import / Kemas kini data aku',()=>go('imp')));
+  add(btn('+ Tambah contact',()=>go('edit'),'p'),canPick()&&btn('Cari dalam phonebook',()=>phonebook()),btn('Kad Kecemasan Aku',()=>go('card')),source().length&&btn('Import / Kemas kini data aku',()=>go('imp')));
   const ib=btn('Install App',install,'p');ib.id='install';ib.hidden=installed();add(ib,el('div',{class:'row',style:'margin:0'},btn('Backup',backup),btn('Restore',()=>file.click())));
   add(el('small',{style:'color:#4B5563'},'Data disimpan dalam phone ni je. Fail backup tak berkunci, jadi simpan elok-elok.'));
 }
@@ -2447,7 +2470,7 @@ function list(type,key){
   const v=inView(type,key);
   add(...v.map(i=>item(i,type,key)));
   if(!v.length)add(el('div',{class:'card'},type==='cat'?'Belum ada contact. Tekan "+ Tambah contact".':'Belum ada contact untuk situasi ni. Tambah baru, atau edit contact sedia ada dan tanda situasi ni.'));
-  add(btn('+ Tambah contact',()=>go('edit','',type==='cat'?{cat:key}:{sit:[key]}),'p'));
+  add(btn('+ Tambah contact',()=>go('edit','',type==='cat'?{cat:key}:{sit:[key]}),'p'),type==='cat'&&canPick()&&btn('Cari dalam phonebook',()=>phonebook(key)));
 }
 function field(l,k,v,type,ph){return el('label',{},l,el('input',{name:k,value:v||'',type:type||'text',placeholder:ph,maxlength:300}))}
 function edit(id,preset){
