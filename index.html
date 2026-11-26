@@ -23,16 +23,19 @@ body{margin:0;background:#F3F4F6;color:#14233B;font-family:system-ui,sans-serif}
 header{background:#14233B;color:#fff;padding:calc(18px + env(safe-area-inset-top)) 16px 16px;display:flex;gap:12px;align-items:center}
 header img{width:48px;height:48px;border-radius:12px;border:1px solid #475569}
 h1{margin:0;font-size:22px} header p{margin:3px 0 0;font-size:13px;color:#CBD5E1}
-#back{margin-left:auto;background:transparent;border:1px solid #CBD5E1;color:#fff}
+#back{margin-left:auto;width:44px;flex-shrink:0;padding:0;background:transparent;border:1px solid #CBD5E1;color:#fff}
 main{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 button,.b{min-height:44px;min-width:44px;border-radius:12px;border:1.5px solid #14233B;background:#fff;color:#14233B;font:700 14px system-ui,sans-serif;padding:8px 12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;text-align:center}
 .p{background:#14233B;color:#fff}.r{background:#B3261E;border-color:#B3261E;color:#fff}
 .big{font-size:20px;padding:16px}
 input,select,textarea{width:100%;min-height:44px;border-radius:10px;border:1px solid #6B7280;padding:8px 12px;font:15px system-ui,sans-serif;background:#fff;color:#14233B}
 label{font-size:13px;font-weight:700;display:flex;flex-direction:column;gap:4px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.tile{flex-direction:column;align-items:flex-start;text-align:left;border:0;min-height:84px;font-size:16px}
-.tile small,.card small{font-weight:400;font-size:12px;color:#4B5563}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tile{flex-direction:column;gap:5px;min-width:0;min-height:64px;border:0;border-radius:14px;font-size:11px;padding:6px 2px}
+.b,button{gap:8px}.card small{font-size:12px;color:#4B5563}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.round{width:44px;height:44px;min-height:44px;flex-shrink:0;border:0;border-radius:50%;background:#F3F4F6;padding:0;display:inline-flex;align-items:center;justify-content:center;color:#14233B}
+.round.p{background:#14233B;color:#fff}
 .card{background:#fff;border-radius:14px;padding:12px 14px;overflow-wrap:anywhere}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:10px}
 h2{font-size:15px;margin:8px 0 0}
@@ -48,9 +51,9 @@ footer{margin-top:auto;text-align:center;font-size:11px;line-height:1.7;color:#4
 <body>
 <div id="load"><div class="donut" role="img" aria-label="Loading"></div><div id="loadtxt">Sedang loading...</div></div>
 <div id="wrap">
-<header><img src="logo.svg" alt="Logo MySOS"><div><h1 id="title">MySOS</h1><p id="sub"></p></div><button id="back" hidden>Kembali</button></header>
+<header><img src="logo.svg" alt="Logo MySOS"><div><h1 id="title">MySOS</h1><p id="sub"></p></div><button id="back" aria-label="Kembali" hidden></button></header>
 <main id="main"></main>
-<footer>MySOS . v1.3 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
+<footer>MySOS . v1.4 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
 </div>
 <script>//---------------------------------------------------------------------
 //
@@ -2367,6 +2370,11 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){alert(
 function el(tag,attrs,...kids){const n=document.createElement(tag);for(const k in attrs||{}){if(k.startsWith('on'))n[k]=attrs[k];else if(attrs[k]!==false&&attrs[k]!=null)n.setAttribute(k,attrs[k])}n.append(...kids.filter(k=>k!=null&&k!==false));return n}
 const btn=(t,f,c)=>el('button',{type:'button',class:c,onclick:f},t);
 const $=id=>document.getElementById(id);
+const ICONS={"call": "<path d=\"M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z\"/>", "wa": "<path d=\"M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.2A8.5 8.5 0 1 1 21 11.5z\"/>", "copy": "<rect x=\"9\" y=\"9\" width=\"11\" height=\"11\" rx=\"2\"/><path d=\"M5 15V5a1 1 0 0 1 1-1h9\"/>", "cal": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M3 10h18M8 3v4M16 3v4\"/>", "up": "<path d=\"M12 20V5M6 11l6-6 6 6\"/>", "edit": "<path d=\"M4 20h4L19 9l-4-4L4 16zM13 7l4 4\"/>", "back": "<path d=\"M15 5l-7 7 7 7\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "book": "<rect x=\"5\" y=\"3\" width=\"15\" height=\"18\" rx=\"2\"/><circle cx=\"12.5\" cy=\"10\" r=\"2.5\"/><path d=\"M8.5 17c.7-2 2.2-3 4-3s3.300 1 4 3M3 7h4M3 12h4M3 17h4\"/>", "family": "<circle cx=\"9\" cy=\"8\" r=\"3\"/><path d=\"M3 20c0-3.300 2.700-6 6-6s6 2.700 6 6\"/><circle cx=\"17\" cy=\"9\" r=\"2.5\"/><path d=\"M17 14c2.500 0 4.500 2 4.500 4.500\"/>", "shield": "<path d=\"M12 3l8 3v5c0 5-3.400 8.300-8 10-4.600-1.700-8-5-8-10V6zM8.5 12l2.500 2.500 4.500-5\"/>", "office": "<rect x=\"3\" y=\"8\" width=\"18\" height=\"12\" rx=\"2\"/><path d=\"M9 8V5h6v3M3 13h18\"/>", "siren": "<path d=\"M6 18v-5a6 6 0 0 1 12 0v5M4 21h16M4 18h16M12 2v2M4 5l2 2M20 5l-2 2\"/>", "car": "<path d=\"M5 11l1.500-5h11L19 11M3 11h18v6H3zM6 17v2M18 17v2M6.500 14h1M16.500 14h1\"/>", "home": "<path d=\"M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6\"/>", "bank": "<path d=\"M3 9l9-5 9 5zM5 10v8M9.500 10v8M14.500 10v8M19 10v8M3 20h18\"/>", "more": "<circle cx=\"5\" cy=\"12\" r=\"1.500\"/><circle cx=\"12\" cy=\"12\" r=\"1.500\"/><circle cx=\"19\" cy=\"12\" r=\"1.500\"/>", "hosp": "<rect x=\"4\" y=\"4\" width=\"16\" height=\"17\" rx=\"2\"/><path d=\"M12 8v8M8 12h8\"/>", "card": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><circle cx=\"8.500\" cy=\"11\" r=\"2\"/><path d=\"M5.500 16c.5-1.500 1.600-2 3-2s2.500.5 3 2M14 10h5M14 14h5\"/>", "install": "<path d=\"M12 4v11M7 11l5 5 5-5M5 20h14\"/>", "backup": "<path d=\"M12 16V5M7 9l5-5 5 5M5 20h14\"/>", "restore": "<path d=\"M4 12a8 8 0 1 0 3-6.200M4 4v4h4\"/>", "check": "<path d=\"M5 13l4 4L19 7\"/>", "trash": "<path d=\"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13\"/>", "pin": "<path d=\"M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z\"/><circle cx=\"12\" cy=\"10\" r=\"2.500\"/>", "import": "<path d=\"M12 3v12M7 10l5 5 5-5M4 17v3h16v-3\"/>"};
+function ic(n,size){const t=document.createElement('span');t.innerHTML='<svg width="'+(size||20)+'" height="'+(size||20)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICONS[n]+'</svg>';return t.firstChild}
+const wi=(n,node)=>(node.prepend(ic(n)),node);
+const tile=(n,label,f,c)=>el('button',{type:'button',class:'tile '+(c||''),onclick:f},ic(n,24),el('span',{},label));
+function round(n,label,attrs,c){const a={class:'round '+(c||''),'aria-label':label,title:label,...attrs};return el(a.href?'a':'button',a,ic(n))}
 function loading(t){$('loadtxt').textContent=t||'Sedang loading...';$('load').hidden=false}
 function done(){$('load').hidden=true}
 const digits=t=>t.replace(/[^\d+*#]/g,'');
@@ -2379,7 +2387,7 @@ let stack=[['home']];
 function go(...v){stack.push(v);history.pushState(null,'');render()}
 function back(){if(stack.length>1)history.back()}
 onpopstate=()=>{if(stack.length>1)stack.pop();render()};
-$('back').onclick=back;
+$('back').onclick=back;$('back').append(ic('back',22));
 function head(t,s){$('title').textContent=t;$('sub').textContent=s}
 function render(){const [v,a,b]=stack[stack.length-1];$('back').hidden=stack.length<2;$('main').replaceChildren();({home,list,edit,card,imp,pick})[v](a,b);scrollTo(0,0)}
 const add=(...n)=>$('main').append(...n.filter(Boolean));
@@ -2389,13 +2397,13 @@ function item(i,type,key){
   if(i.info)c.append(el('br'),el('small',{},i.info));
   if(i.ref)c.append(el('br'),el('small',{},'No. polisi/kad: '+i.ref));
   for(const [d,l] of [[i.exp,''],[i.exp2,'Cukai jalan: ']])if(d)c.append(el('div',{class:days(d)<=30?'warn':''},el('small',{},l+expText(d))));
-  const r=el('div',{class:'row'});
-  if(i.tel)r.append(el('a',{class:'b p',href:'tel:'+digits(i.tel)},'Call'));
-  if(i.tel&&isMobile(i.tel))r.append(el('a',{class:'b',href:'https://wa.me/'+waNum(i.tel),target:'_blank',rel:'noopener'},'WA'));
-  if(i.ref||i.tel){const s=btn('Salin',async()=>{try{await navigator.clipboard.writeText(i.ref||i.tel);s.textContent='Disalin'}catch(e){prompt('Salin:',i.ref||i.tel)}});r.append(s)}
-  if(i.exp)r.append(btn('Kalendar',()=>ics(i)));
-  if(type)r.append(btn('Naik',()=>up(i,type,key)));
-  r.append(btn('Edit',()=>go('edit',i.id)));
+  const r=el('div',{class:'acts'});
+  if(i.tel)r.append(round('call','Call',{href:'tel:'+digits(i.tel)},'p'));
+  if(i.tel&&isMobile(i.tel))r.append(round('wa','WhatsApp',{href:'https://wa.me/'+waNum(i.tel),target:'_blank',rel:'noopener'}));
+  if(i.ref||i.tel){const k=round('copy','Salin',{type:'button',onclick:async()=>{try{await navigator.clipboard.writeText(i.ref||i.tel);k.replaceChildren(ic('check'));setTimeout(()=>k.replaceChildren(ic('copy')),1500)}catch(e){prompt('Salin:',i.ref||i.tel)}}});r.append(k)}
+  if(i.exp)r.append(round('cal','Kalendar',{type:'button',onclick:()=>ics(i)}));
+  if(type)r.append(round('up','Naik',{type:'button',onclick:()=>up(i,type,key)}));
+  r.append(round('edit','Edit',{type:'button',onclick:()=>go('edit',i.id)}));
   c.append(r);return c}
 const inView=(type,key)=>db.items.filter(i=>type==='cat'?i.cat===key:i.sit.includes(key));
 function up(i,type,key){const v=inView(type,key),n=v.indexOf(i);if(n<1)return;const a=db.items.indexOf(i),b=db.items.indexOf(v[n-1]);[db.items[a],db.items[b]]=[db.items[b],db.items[a]];save();render()}
@@ -2452,25 +2460,26 @@ function home(){
   head('MySOS','Contact penting, sekali tekan');
   const res=el('div',{style:'display:flex;flex-direction:column;gap:10px'});
   const q=el('input',{type:'search','aria-label':'Cari contact',placeholder:'Cari nama atau nombor...',oninput:()=>{const k=q.value.trim().toLowerCase();res.replaceChildren();if(!k)return;const f=db.items.filter(i=>[i.name,i.role,i.tel,i.ref,i.info].join(' ').toLowerCase().includes(k));res.append(...(f.length?f.map(i=>item(i)):[el('small',{},'Tak jumpa.')]))}});
-  add(el('a',{class:'b r big',href:'tel:999'},'KECEMASAN: Call 999'),q,res);
+  add(wi('siren',el('a',{class:'b r big',href:'tel:999'},'Call 999')),q,res);
   const due=db.items.flatMap(i=>[[i.name,i.exp],[i.name+' (cukai jalan)',i.exp2]]).filter(([,d])=>d&&days(d)<=30);
   if(due.length)add(el('div',{class:'card'},el('div',{class:'warn'},'Perlu renew'),...due.map(([n,d])=>el('div',{},el('small',{},n+': '+expText(d))))));
-  add(el('h2',{},'Situasi'),...Object.entries(SITS).map(([k,t])=>btn(t,()=>go('list','sit',k))));
-  add(el('h2',{},'Kategori'),el('div',{class:'grid'},...Object.entries(CATS).map(([k,[t,s]])=>btn([t],()=>go('list','cat',k),'tile'))));
-  document.querySelectorAll('.tile').forEach((n,x)=>{const [k,[,s]]=Object.entries(CATS)[x];const c=db.items.filter(i=>i.cat===k).length;n.append(el('small',{},c?c+' contact':s))});
-  add(btn('+ Tambah contact',()=>go('edit'),'p'),canPick()&&btn('Cari dalam phonebook',()=>phonebook()),btn('Kad Kecemasan Aku',()=>go('card')),source().length&&btn('Import / Kemas kini data aku',()=>go('imp')));
-  const ib=btn('Install App',install,'p');ib.id='install';ib.hidden=installed();add(ib,el('div',{class:'row',style:'margin:0'},btn('Backup',backup),btn('Restore',()=>file.click())));
+  const SI={accident:['car','Accident'],hospital:['hosp','Hospital'],rumah:['home','Rumah']};
+  const CI={keluarga:['family','Keluarga'],insurans:['shield','Insurans'],pejabat:['office','Pejabat'],kecemasan:['siren','Kecemasan'],kereta:['car','Kereta'],rumah:['home','Rumah'],bank:['bank','Bank'],lain:['more','Lain']};
+  add(el('h2',{},'Situasi'),el('div',{class:'grid g3'},...Object.entries(SI).map(([k,[n,t]])=>tile(n,t,()=>go('list','sit',k)))));
+  add(el('h2',{},'Kategori'),el('div',{class:'grid'},...Object.entries(CI).map(([k,[n,t]])=>tile(n,t,()=>go('list','cat',k)))));
+  const ib=tile('install','Install',install);ib.id='install';ib.hidden=installed();
+  add(el('h2',{},'Menu'),el('div',{class:'grid'},...[tile('plus','Tambah',()=>go('edit'),'p'),canPick()&&tile('book','Phonebook',()=>phonebook()),tile('card','Kad SOS',()=>go('card')),source().length&&tile('import','Import',()=>go('imp')),ib,tile('backup','Backup',backup),tile('restore','Restore',()=>file.click())].filter(Boolean)));
   add(el('small',{style:'color:#4B5563'},'Data disimpan dalam phone ni je. Fail backup tak berkunci, jadi simpan elok-elok.'));
 }
 function list(type,key){
   const t=type==='cat'?CATS[key][0]:SITS[key];
   head(t,type==='cat'?'Ikut turutan: cuba yang atas dulu':'Semua yang perlu, ikut turutan');
-  if(type==='sit'||key==='kecemasan')add(el('a',{class:'b r big',href:'tel:999'},'Call 999'));
-  if(type==='sit'||key==='keluarga')add(btn('Hantar WhatsApp kecemasan + lokasi',()=>sos(type,key),'r'));
+  if(type==='sit'||key==='kecemasan')add(wi('siren',el('a',{class:'b r big',href:'tel:999'},'Call 999')));
+  if(type==='sit'||key==='keluarga')add(wi('pin',btn('WhatsApp kecemasan + lokasi',()=>sos(type,key),'r')));
   const v=inView(type,key);
   add(...v.map(i=>item(i,type,key)));
   if(!v.length)add(el('div',{class:'card'},type==='cat'?'Belum ada contact. Tekan "+ Tambah contact".':'Belum ada contact untuk situasi ni. Tambah baru, atau edit contact sedia ada dan tanda situasi ni.'));
-  add(btn('+ Tambah contact',()=>go('edit','',type==='cat'?{cat:key}:{sit:[key]}),'p'),type==='cat'&&canPick()&&btn('Cari dalam phonebook',()=>phonebook(key)));
+  add(el('div',{class:'grid g2'},...[tile('plus','Tambah',()=>go('edit','',type==='cat'?{cat:key}:{sit:[key]}),'p'),type==='cat'&&canPick()&&tile('book','Phonebook',()=>phonebook(key))].filter(Boolean)));
 }
 function field(l,k,v,type,ph){return el('label',{},l,el('input',{name:k,value:v||'',type:type||'text',placeholder:ph,maxlength:300}))}
 function edit(id,preset){
@@ -2481,7 +2490,7 @@ function edit(id,preset){
   const name=field('Nama','name',i.name);name.lastChild.required=true;
   const f=el('form',{style:'display:flex;flex-direction:column;gap:10px'},el('label',{},'Kategori',cat),name,field('Peranan / nota','role',i.role,'text','cth: Bos, bengkel, panel hospital'),field('No. telefon','tel',i.tel,'tel'),field('No. polisi / kad (kalau ada)','ref',i.ref),field('Tarikh tamat (insurans, lesen)','exp',i.exp,'date'),field('Tarikh tamat cukai jalan','exp2',i.exp2,'date'),
     el('strong',{style:'font-size:13px'},'Tunjuk dalam situasi'),...Object.entries(SITS).map(([k,t])=>el('label',{class:'chk'},el('input',{type:'checkbox',name:'sit',value:k,checked:i.sit.includes(k)?'':false}),t)),
-    el('button',{class:'p',type:'submit'},'Simpan'),old&&btn('Padam',()=>{if(confirm('Padam '+old.name+'?')){db.items=db.items.filter(x=>x!==old);save();back()}},'r'));
+    wi('check',el('button',{class:'p',type:'submit'},'Simpan')),old&&wi('trash',btn('Padam',()=>{if(confirm('Padam '+old.name+'?')){db.items=db.items.filter(x=>x!==old);save();back()}},'r')));
   f.onsubmit=e=>{e.preventDefault();const d=new FormData(f);const n={id:old?old.id:uid(),info:old?old.info:'',sit:d.getAll('sit')};['cat','name','role','tel','ref','exp','exp2'].forEach(k=>n[k]=String(d.get(k)||'').trim());if(!n.name)return;if(old)db.items[db.items.indexOf(old)]=n;else db.items.push(n);save();back()};
   add(f);
 }
@@ -2490,11 +2499,11 @@ function makeQR(){qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];const 
 function drawQR(ctx,q,x,y,size){const n=q.getModuleCount(),s=Math.floor(size/(n+8)),o=(size-s*n)/2;ctx.fillStyle='#fff';ctx.fillRect(x,y,size,size);ctx.fillStyle='#000';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))ctx.fillRect(x+o+c*s,y+o+r*s,s,s)}
 function card(){
   head('Kad Kecemasan','Boleh tunjuk pada orang yang tolong');
-  const f=el('form',{style:'display:flex;flex-direction:column;gap:10px'},...CARD.map(([k,l])=>field(l,k,db.card[k],k==='telwaris'?'tel':'text')),el('button',{class:'p',type:'submit'},'Simpan kad'));
+  const f=el('form',{style:'display:flex;flex-direction:column;gap:10px'},...CARD.map(([k,l])=>field(l,k,db.card[k],k==='telwaris'?'tel':'text')),wi('check',el('button',{class:'p',type:'submit'},'Simpan kad')));
   f.onsubmit=e=>{e.preventDefault();const d=new FormData(f);CARD.forEach(([k])=>db.card[k]=String(d.get(k)||'').trim());save();render()};
   if(cardText()){
-    if(db.card.telwaris)add(el('a',{class:'b r',href:'tel:'+digits(db.card.telwaris)},'Call waris'));
-    try{const q=makeQR(),c=el('canvas',{width:600,height:600,role:'img','aria-label':'QR kad kecemasan',style:'width:100%;max-width:280px;align-self:center;border-radius:12px'});drawQR(c.getContext('2d'),q,0,0,600);add(c,btn('Download wallpaper lock screen',wallpaper,'p'),el('small',{style:'color:#4B5563'},'Sesiapa yang scan QR ni boleh baca maklumat kad. Letak yang perlu je.'))}
+    if(db.card.telwaris)add(wi('call',el('a',{class:'b r',href:'tel:'+digits(db.card.telwaris)},'Call waris')));
+    try{const q=makeQR(),c=el('canvas',{width:600,height:600,role:'img','aria-label':'QR kad kecemasan',style:'width:100%;max-width:280px;align-self:center;border-radius:12px'});drawQR(c.getContext('2d'),q,0,0,600);add(c,wi('install',btn('Wallpaper lock screen',wallpaper,'p')),el('small',{style:'color:#4B5563'},'Sesiapa yang scan QR ni boleh baca maklumat kad. Letak yang perlu je.'))}
     catch(e){add(el('div',{class:'warn'},'Maklumat terlalu panjang untuk QR. Pendekkan sikit.'))}
   }
   add(f);
@@ -2506,7 +2515,7 @@ function wallpaper(){
 function sos(type,key){
   const first=inView(type,key).find(i=>i.cat==='keluarga'&&isMobile(i.tel))||db.items.find(i=>i.cat==='keluarga'&&isMobile(i.tel));
   const send=loc=>{done();const msg='KECEMASAN: aku perlukan bantuan.'+(type==='sit'?' ('+SITS[key]+')':'')+(loc?' Lokasi aku: '+loc:' (lokasi tak dapat dikesan)');const url='https://wa.me/'+(first?waNum(first.tel):'')+'?text='+encodeURIComponent(msg);
-    add(el('div',{class:'card',id:'sosbox'},el('small',{},msg),el('div',{class:'row'},el('a',{class:'b r',href:url,target:'_blank',rel:'noopener'},first?'Buka WhatsApp: '+first.name:'Buka WhatsApp'))));$('sosbox').scrollIntoView()};
+    add(el('div',{class:'card',id:'sosbox'},el('small',{},msg),el('div',{class:'row'},wi('wa',el('a',{class:'b r',href:url,target:'_blank',rel:'noopener'},first?'Buka WhatsApp: '+first.name:'Buka WhatsApp')))));$('sosbox').scrollIntoView()};
   const old=$('sosbox');if(old)old.remove();
   if(!navigator.geolocation)return send('');
   loading('Tengah cari lokasi...');
