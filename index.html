@@ -50,7 +50,7 @@ footer{margin-top:auto;text-align:center;font-size:11px;line-height:1.7;color:#4
 <div id="wrap">
 <header><img src="logo.svg" alt="Logo MySOS"><div><h1 id="title">MySOS</h1><p id="sub"></p></div><button id="back" hidden>Kembali</button></header>
 <main id="main"></main>
-<footer>MySOS . v1.0 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
+<footer>MySOS . v1.1 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
 </div>
 <script>//---------------------------------------------------------------------
 //
@@ -2359,8 +2359,9 @@ const KEY='mysos-v1';
 const fresh=()=>({items:[],card:{}});
 let db=fresh();
 try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.items))db=clean(s)}catch(e){}
+function isoD(v){return typeof v==='string'&&/^\d{4}-\d\d-\d\d$/.test(v)?v:''}
 function str(v){return typeof v==='string'?v.slice(0,300):''}
-function clean(s){return{items:s.items.filter(i=>i&&typeof i==='object').map(i=>({id:str(i.id)||uid(),cat:Object.hasOwn(CATS,i.cat)?i.cat:'lain',name:str(i.name),role:str(i.role),tel:str(i.tel),ref:str(i.ref),exp:/^\d{4}-\d\d-\d\d$/.test(i.exp)?i.exp:'',sit:Array.isArray(i.sit)?i.sit.filter(x=>Object.hasOwn(SITS,x)):[]})),card:Object.fromEntries(CARD.map(([k])=>[k,str(s.card&&s.card[k])]))}}
+function clean(s){return{items:s.items.filter(i=>i&&typeof i==='object').map(i=>({id:str(i.id)||uid(),cat:Object.hasOwn(CATS,i.cat)?i.cat:'lain',name:str(i.name),role:str(i.role),tel:str(i.tel),ref:str(i.ref),exp:isoD(i.exp),exp2:isoD(i.exp2),info:str(i.info),sit:Array.isArray(i.sit)?i.sit.filter(x=>Object.hasOwn(SITS,x)):[]})),card:Object.fromEntries(CARD.map(([k])=>[k,str(s.card&&s.card[k])]))}}
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){alert('Tak dapat simpan. Storage browser penuh atau disekat.')}}
 function el(tag,attrs,...kids){const n=document.createElement(tag);for(const k in attrs||{}){if(k.startsWith('on'))n[k]=attrs[k];else if(attrs[k]!==false&&attrs[k]!=null)n.setAttribute(k,attrs[k])}n.append(...kids.filter(k=>k!=null&&k!==false));return n}
@@ -2380,13 +2381,14 @@ function back(){if(stack.length>1)history.back()}
 onpopstate=()=>{if(stack.length>1)stack.pop();render()};
 $('back').onclick=back;
 function head(t,s){$('title').textContent=t;$('sub').textContent=s}
-function render(){const [v,a,b]=stack[stack.length-1];$('back').hidden=stack.length<2;$('main').replaceChildren();({home,list,edit,card})[v](a,b);scrollTo(0,0)}
+function render(){const [v,a,b]=stack[stack.length-1];$('back').hidden=stack.length<2;$('main').replaceChildren();({home,list,edit,card,imp})[v](a,b);scrollTo(0,0)}
 const add=(...n)=>$('main').append(...n.filter(Boolean));
 
 function item(i,type,key){
   const c=el('div',{class:'card'},el('strong',{},i.name),el('br'),el('small',{},[i.role,i.tel].filter(Boolean).join(' . ')));
+  if(i.info)c.append(el('br'),el('small',{},i.info));
   if(i.ref)c.append(el('br'),el('small',{},'No. polisi/kad: '+i.ref));
-  if(i.exp)c.append(el('div',{class:days(i.exp)<=30?'warn':''},el('small',{},expText(i.exp))));
+  for(const [d,l] of [[i.exp,''],[i.exp2,'Cukai jalan: ']])if(d)c.append(el('div',{class:days(d)<=30?'warn':''},el('small',{},l+expText(d))));
   const r=el('div',{class:'row'});
   if(i.tel)r.append(el('a',{class:'b p',href:'tel:'+digits(i.tel)},'Call'));
   if(i.tel&&isMobile(i.tel))r.append(el('a',{class:'b',href:'https://wa.me/'+waNum(i.tel),target:'_blank',rel:'noopener'},'WA'));
@@ -2398,17 +2400,42 @@ function item(i,type,key){
 const inView=(type,key)=>db.items.filter(i=>type==='cat'?i.cat===key:i.sit.includes(key));
 function up(i,type,key){const v=inView(type,key),n=v.indexOf(i);if(n<1)return;const a=db.items.indexOf(i),b=db.items.indexOf(v[n-1]);[db.items[a],db.items[b]]=[db.items[b],db.items[a]];save();render()}
 
+const SRC=atob('bXl3YXJpc2FuX3Yx');
+function source(){
+  let w;try{w=JSON.parse(localStorage.getItem(SRC))}catch(e){return[]}
+  if(!w)return[];
+  const arr=v=>Array.isArray(v)?v.filter(x=>x&&typeof x==='object'&&x.id):[];
+  const J={kom:'Komprehensif',p3:'Pihak ketiga',tiada:'Tiada insurans'};
+  const car=arr(w.harta).filter(h=>h.kat==='kenderaan'&&!h.arsip&&[h.insJenis,h.insSyarikat,h.insNilai,h.insTamat,h.jalanTamat].some(Boolean)).map(h=>({g:'Insurans kenderaan',id:'x-'+h.id,cat:'insurans',sit:['accident'],name:str(h.nama),info:[J[h.insJenis],str(h.insSyarikat),+h.insNilai>0?'dilindungi RM '+(+h.insNilai).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}):''].filter(Boolean).join(' . '),exp:isoD(h.insTamat),exp2:isoD(h.jalanTamat)}));
+  const call=arr(w.hubungi).filter(h=>h.nama).map(h=>({g:'Hubungi dahulu',id:'x-'+h.id,cat:'lain',sit:[],name:str(h.nama),role:str(h.peranan),tel:str(h.tel)}));
+  const fam=arr(w.waris).filter(h=>h.nama&&h.tel).map(h=>({g:'Waris (ada no. telefon)',id:'x-'+h.id,cat:'keluarga',sit:[],name:str(h.nama),role:str(h.hubungan),tel:str(h.tel)}));
+  return[...car,...call,...fam]}
+function imp(){
+  head('Import data aku','Tanda yang nak ambil');
+  const rows=source(),boxes=[];let g='';
+  for(const r of rows){
+    if(r.g!==g){g=r.g;add(el('h2',{},g))}
+    const have=db.items.some(i=>i.id===r.id),b=el('input',{type:'checkbox',checked:''});boxes.push([b,r]);
+    add(el('label',{class:'card chk'},b,el('span',{},el('strong',{},r.name),el('br'),el('small',{},[r.info,r.role,r.tel,r.exp&&expText(r.exp),r.exp2&&'Cukai jalan: '+expText(r.exp2),have&&'(dah ada, akan dikemas kini)'].filter(Boolean).join(' . ')))))}
+  add(btn('Import / Kemas kini',()=>{
+    const pick=boxes.filter(([b])=>b.checked).map(([,r])=>r);if(!pick.length)return alert('Tanda sekurang-kurangnya satu.');
+    for(const r of pick){
+      const {g:_,cat,sit,...data}=r,old=db.items.find(i=>i.id===r.id);
+      if(old)Object.assign(old,data);else db.items.push(clean({items:[r]}).items[0])}
+    save();alert(pick.length+' rekod diimport.');back()},'p'),
+    el('small',{style:'color:#4B5563'},'No. polisi dan hotline insurans isi sendiri (tekan Edit). Tak hilang bila kemas kini.'));
+}
 function home(){
   head('MySOS','Contact penting, sekali tekan');
   const res=el('div',{style:'display:flex;flex-direction:column;gap:10px'});
-  const q=el('input',{type:'search','aria-label':'Cari contact',placeholder:'Cari nama atau nombor...',oninput:()=>{const k=q.value.trim().toLowerCase();res.replaceChildren();if(!k)return;const f=db.items.filter(i=>[i.name,i.role,i.tel,i.ref].join(' ').toLowerCase().includes(k));res.append(...(f.length?f.map(i=>item(i)):[el('small',{},'Tak jumpa.')]))}});
+  const q=el('input',{type:'search','aria-label':'Cari contact',placeholder:'Cari nama atau nombor...',oninput:()=>{const k=q.value.trim().toLowerCase();res.replaceChildren();if(!k)return;const f=db.items.filter(i=>[i.name,i.role,i.tel,i.ref,i.info].join(' ').toLowerCase().includes(k));res.append(...(f.length?f.map(i=>item(i)):[el('small',{},'Tak jumpa.')]))}});
   add(el('a',{class:'b r big',href:'tel:999'},'KECEMASAN: Call 999'),q,res);
-  const due=db.items.filter(i=>i.exp&&days(i.exp)<=30);
-  if(due.length)add(el('div',{class:'card'},el('div',{class:'warn'},'Perlu renew'),...due.map(i=>el('div',{},el('small',{},i.name+': '+expText(i.exp))))));
+  const due=db.items.flatMap(i=>[[i.name,i.exp],[i.name+' (cukai jalan)',i.exp2]]).filter(([,d])=>d&&days(d)<=30);
+  if(due.length)add(el('div',{class:'card'},el('div',{class:'warn'},'Perlu renew'),...due.map(([n,d])=>el('div',{},el('small',{},n+': '+expText(d))))));
   add(el('h2',{},'Situasi'),...Object.entries(SITS).map(([k,t])=>btn(t,()=>go('list','sit',k))));
   add(el('h2',{},'Kategori'),el('div',{class:'grid'},...Object.entries(CATS).map(([k,[t,s]])=>btn([t],()=>go('list','cat',k),'tile'))));
   document.querySelectorAll('.tile').forEach((n,x)=>{const [k,[,s]]=Object.entries(CATS)[x];const c=db.items.filter(i=>i.cat===k).length;n.append(el('small',{},c?c+' contact':s))});
-  add(btn('+ Tambah contact',()=>go('edit'),'p'),btn('Kad Kecemasan Aku',()=>go('card')));
+  add(btn('+ Tambah contact',()=>go('edit'),'p'),btn('Kad Kecemasan Aku',()=>go('card')),source().length&&btn('Import / Kemas kini data aku',()=>go('imp')));
   add(btn('Install App',install,'p'),el('div',{class:'row',style:'margin:0'},btn('Backup',backup),btn('Restore',()=>file.click())));
   add(el('small',{style:'color:#4B5563'},'Data disimpan dalam phone ni je. Fail backup tak berkunci, jadi simpan elok-elok.'));
 }
@@ -2429,10 +2456,10 @@ function edit(id,preset){
   head(old?'Edit contact':'Tambah contact','Isi apa yang perlu je');
   const cat=el('select',{name:'cat'},...Object.entries(CATS).map(([k,[t]])=>el('option',{value:k},t)));cat.value=i.cat;
   const name=field('Nama','name',i.name);name.lastChild.required=true;
-  const f=el('form',{style:'display:flex;flex-direction:column;gap:10px'},el('label',{},'Kategori',cat),name,field('Peranan / nota','role',i.role,'text','cth: Bos, bengkel, panel hospital'),field('No. telefon','tel',i.tel,'tel'),field('No. polisi / kad (kalau ada)','ref',i.ref),field('Tarikh tamat (insurans, roadtax, lesen)','exp',i.exp,'date'),
+  const f=el('form',{style:'display:flex;flex-direction:column;gap:10px'},el('label',{},'Kategori',cat),name,field('Peranan / nota','role',i.role,'text','cth: Bos, bengkel, panel hospital'),field('No. telefon','tel',i.tel,'tel'),field('No. polisi / kad (kalau ada)','ref',i.ref),field('Tarikh tamat (insurans, lesen)','exp',i.exp,'date'),field('Tarikh tamat cukai jalan','exp2',i.exp2,'date'),
     el('strong',{style:'font-size:13px'},'Tunjuk dalam situasi'),...Object.entries(SITS).map(([k,t])=>el('label',{class:'chk'},el('input',{type:'checkbox',name:'sit',value:k,checked:i.sit.includes(k)?'':false}),t)),
     el('button',{class:'p',type:'submit'},'Simpan'),old&&btn('Padam',()=>{if(confirm('Padam '+old.name+'?')){db.items=db.items.filter(x=>x!==old);save();back()}},'r'));
-  f.onsubmit=e=>{e.preventDefault();const d=new FormData(f);const n={id:old?old.id:uid(),sit:d.getAll('sit')};['cat','name','role','tel','ref','exp'].forEach(k=>n[k]=String(d.get(k)||'').trim());if(!n.name)return;if(old)db.items[db.items.indexOf(old)]=n;else db.items.push(n);save();back()};
+  f.onsubmit=e=>{e.preventDefault();const d=new FormData(f);const n={id:old?old.id:uid(),info:old?old.info:'',sit:d.getAll('sit')};['cat','name','role','tel','ref','exp','exp2'].forEach(k=>n[k]=String(d.get(k)||'').trim());if(!n.name)return;if(old)db.items[db.items.indexOf(old)]=n;else db.items.push(n);save();back()};
   add(f);
 }
 const cardText=()=>CARD.filter(([k])=>db.card[k]).map(([k,l])=>l+': '+db.card[k]).join('\n');
