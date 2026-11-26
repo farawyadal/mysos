@@ -1,0 +1,23 @@
+{
+ "name": "MySOS",
+ "short_name": "MySOS",
+ "description": "Contact penting, sekali tekan. Developed by FaridAssamani",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#14233B",
+ "theme_color": "#14233B",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
