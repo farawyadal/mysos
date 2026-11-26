@@ -50,7 +50,7 @@ footer{margin-top:auto;text-align:center;font-size:11px;line-height:1.7;color:#4
 <div id="wrap">
 <header><img src="logo.svg" alt="Logo MySOS"><div><h1 id="title">MySOS</h1><p id="sub"></p></div><button id="back" hidden>Kembali</button></header>
 <main id="main"></main>
-<footer>MySOS . v1.1 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
+<footer>MySOS . v1.2 . 26 Nov 2026 . &copy;<span id="yr">2026</span><br>Developed by FaridAssamani</footer>
 </div>
 <script>//---------------------------------------------------------------------
 //
@@ -2436,7 +2436,7 @@ function home(){
   add(el('h2',{},'Kategori'),el('div',{class:'grid'},...Object.entries(CATS).map(([k,[t,s]])=>btn([t],()=>go('list','cat',k),'tile'))));
   document.querySelectorAll('.tile').forEach((n,x)=>{const [k,[,s]]=Object.entries(CATS)[x];const c=db.items.filter(i=>i.cat===k).length;n.append(el('small',{},c?c+' contact':s))});
   add(btn('+ Tambah contact',()=>go('edit'),'p'),btn('Kad Kecemasan Aku',()=>go('card')),source().length&&btn('Import / Kemas kini data aku',()=>go('imp')));
-  add(btn('Install App',install,'p'),el('div',{class:'row',style:'margin:0'},btn('Backup',backup),btn('Restore',()=>file.click())));
+  const ib=btn('Install App',install,'p');ib.id='install';ib.hidden=installed();add(ib,el('div',{class:'row',style:'margin:0'},btn('Backup',backup),btn('Restore',()=>file.click())));
   add(el('small',{style:'color:#4B5563'},'Data disimpan dalam phone ni je. Fail backup tak berkunci, jadi simpan elok-elok.'));
 }
 function list(type,key){
@@ -2493,8 +2493,14 @@ function backup(){download(new Blob([JSON.stringify(db,null,1)],{type:'applicati
 const file=el('input',{type:'file',accept:'.json,application/json'});
 file.onchange=async()=>{const f=file.files[0];if(!f)return;loading('Tengah restore...');try{const s=JSON.parse(await f.text());if(!Array.isArray(s.items))throw 0;done();if(confirm('Ganti semua data sekarang dengan fail backup ni?')){db=clean(s);save();render()}}catch(e){done();alert('Fail backup tak sah.')}file.value=''};
 let prompt_=null;
-addEventListener('beforeinstallprompt',e=>{e.preventDefault();prompt_=e});
-function install(){if(matchMedia('(display-mode: standalone)').matches)return alert('MySOS dah di-install.');if(prompt_){prompt_.prompt();prompt_=null;return}alert('iPhone: buka dalam Safari, tekan Share, pilih "Add to Home Screen".\nAndroid: tekan menu browser, pilih "Install app" atau "Add to Home screen".')}
+const IKEY='mysos-installed';
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+function installed(){try{return standalone()||localStorage.getItem(IKEY)==='1'}catch(e){return standalone()}}
+function mark(on){try{on?localStorage.setItem(IKEY,'1'):localStorage.removeItem(IKEY)}catch(e){}const b=document.getElementById('install');if(b)b.hidden=on||standalone()}
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();prompt_=e;mark(false)});
+addEventListener('appinstalled',()=>mark(true));
+if(standalone())mark(true);
+function install(){if(prompt_){prompt_.prompt();prompt_=null;return}alert('iPhone: buka dalam Safari, tekan Share, pilih "Add to Home Screen".\nAndroid: tekan menu browser, pilih "Install app" atau "Add to Home screen".')}
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 $('yr').textContent=new Date().getFullYear();
 render();setTimeout(done,500);
